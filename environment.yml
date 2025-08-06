@@ -1,0 +1,12 @@
+name: my_env # 环境名称
+channels:
+  - conda-forge # 指定channel优先级
+  - defaults
+dependencies:
+  - python=3.9 # 指定Python版本
+  - cmake # 示例包
+  - boost
+  - eigen
+  - cgal
+  - opencv
+  # 添加更多你想要安装的包...
