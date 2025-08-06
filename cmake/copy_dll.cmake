@@ -82,30 +82,22 @@ function(copy_dll target)
             continue()
         endif()
         
-        if(WIN32)
-            get_target_property(target_location ${DEPENDENCY} LOCATION)
-            get_filename_component(target_dir "${target_location}" DIRECTORY)
-            get_filename_component(parent_dir "${target_dir}" PATH)
-                         # Instruction to copy target file if it exists
-            string(APPEND COPY_SCRIPT_CONTENT
-                "if(EXISTS \"${parent_dir}/bin/$<TARGET_FILE_NAME:${DEPENDENCY}>\")\n    "
-                    "execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different "
-                    "\"${parent_dir}/bin/$<TARGET_FILE_NAME:${DEPENDENCY}>\" "
-                    "\"$<TARGET_FILE_DIR:${target}>/$<TARGET_FILE_NAME:${DEPENDENCY}>\")\n"
-                "endif()\n"
-            )
-        else()
-             # Instruction to copy target file if it exists
-            string(APPEND COPY_SCRIPT_CONTENT
-                "if(EXISTS \"$<TARGET_FILE:${DEPENDENCY}>\")\n    "
-                    "execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different "
-                    "\"$<TARGET_FILE:${DEPENDENCY}>\" "
-                    "\"$<TARGET_FILE_DIR:${target}>/$<TARGET_FILE_NAME:${DEPENDENCY}>\")\n"
-                "endif()\n"
-            )
-        endif()
         
-       
+        # Instruction to copy target file if it exists
+        string(APPEND COPY_SCRIPT_CONTENT
+            "if(EXISTS \"$<TARGET_FILE:${DEPENDENCY}>\")\n    "
+                "execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different "
+                "\"$<TARGET_FILE:${DEPENDENCY}>\" "
+                "\"$<TARGET_FILE_DIR:${target}>/$<TARGET_FILE_NAME:${DEPENDENCY}>\")\n"
+            "endif()\n"
+        )
+        string(APPEND COPY_SCRIPT_CONTENT
+            "if(EXISTS \"$<TARGET_FILE_DIR:${DEPENDENCY}>/../bin/$<TARGET_FILE_NAME:${DEPENDENCY}>\")\n    "
+                "execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different "
+                "\"$<TARGET_FILE_DIR:${DEPENDENCY}>/../bin/$<TARGET_FILE_NAME:${DEPENDENCY}>\" "
+                "\"$<TARGET_FILE_DIR:${target}>/$<TARGET_FILE_NAME:${DEPENDENCY}>\")\n"
+            "endif()\n"
+        )
     endforeach()
 
     # Finally generate one script for each configuration supported by this generator
