@@ -1,4 +1,4 @@
-set(TARGET_NAME QTDemoApp)
+set(TARGET_NAME GNREditor)
 find_package(Qt6 REQUIRED Core Gui Widgets)  
 qt_standard_project_setup()
 
