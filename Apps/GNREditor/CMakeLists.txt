@@ -26,6 +26,7 @@ target_link_libraries(${TARGET_NAME}
 PUBLIC
 Qt6::Widgets
 Qt6::Gui
+NRI
 )
 
 # qt_add_resources(${TARGET_NAME} "images"

@@ -45,6 +45,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_INSTALL_PREFIX}/bin)
 include(CMakeModules/doxygen.cmake)
 include(CMakeModules/dependency-graph.cmake)
 include(CMakeModules/formatting.cmake)
+include(CMakeModules/get_cpm.cmake)
 # ---- Include guards ----
 if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
   message(
@@ -52,6 +53,12 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
       "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there."
   )
 endif()
+
+CPMAddPackage(
+    NAME NRI
+    GIT_TAG v173
+    GITHUB_REPOSITORY NVIDIA-RTX/NRI
+)
 
 add_subdirectory(Modules)
 add_subdirectory(Apps)
