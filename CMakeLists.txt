@@ -55,9 +55,9 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
 endif()
 
 CPMAddPackage(
-    NAME NRI
-    GIT_TAG v173
-    GITHUB_REPOSITORY NVIDIA-RTX/NRI
+    NAME NRIFramework
+    GIT_TAG bca3acee95d2b1b4e511b20925e6f2c788f94b5f
+    GITHUB_REPOSITORY NVIDIA-RTX/NRIFramework
 )
 
 add_subdirectory(Modules)

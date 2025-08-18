@@ -1,50 +1,69 @@
 set(TARGET_NAME GNREditor)
-find_package(Qt6 REQUIRED Core Gui Widgets)  
-qt_standard_project_setup()
 
 
 file(GLOB_RECURSE CPP_HEAD_FILES  ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 file(GLOB_RECURSE CPP_SOUCE_FILES  ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
-file(GLOB_RECURSE UI_SOUCE_FILES  ${CMAKE_CURRENT_SOURCE_DIR}/*.ui)
-set(QRC_FILE ${CMAKE_CURRENT_SOURCE_DIR}/QResources/resources.qrc)
-set(APPRC_FILE ${CMAKE_CURRENT_SOURCE_DIR}/QResources/appicon.rc)
-set(Translatefile ${CMAKE_CURRENT_SOURCE_DIR}/QResources/Translations/zh_CN.ts)
+set(SHADER_OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/_Shaders")
+file(GLOB_RECURSE SHADERS "Shaders/*.hlsl" "Shaders/*.hlsli")
 
 source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${CPP_HEAD_FILES} ${CPP_SOUCE_FILES})
-# file(GLOB_RECURSE SHADER_FILES_ABS  ${CMAKE_CURRENT_SOURCE_DIR}/shaders/*)
-# set(SHADER_FILES_REL "")
-# foreach(SHADER_FILE_ABS ${SHADER_FILES_ABS})
-#     file(RELATIVE_PATH SHADER_FILE_REL ${CMAKE_CURRENT_SOURCE_DIR} ${SHADER_FILE_ABS})
-#     list(APPEND SHADER_FILES_REL ${SHADER_FILE_REL})
-# endforeach()
 
-qt_add_executable(${TARGET_NAME}  ${CPP_HEAD_FILES} ${CPP_SOUCE_FILES} ${UI_SOUCE_FILES}  ${QRC_FILE} ${APPRC_FILE} ${Translatefile})
+
+add_executable(${TARGET_NAME} ${CPP_HEAD_FILES} ${CPP_SOUCE_FILES})
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER Apps)
-
-
-target_link_libraries(${TARGET_NAME}
-PUBLIC
-Qt6::Widgets
-Qt6::Gui
+target_link_libraries(${TARGET_NAME} PRIVATE
+NRIFramework
 NRI
 )
 
-# qt_add_resources(${TARGET_NAME} "images"
-#     PREFIX "/images"
-#     FILES ./QResources/mgukazma.jpg
-# )
+set_target_properties(${TARGET_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 
-# qt_add_shaders(${TARGET_NAME} "shaders"
-# GLSL "310es, 430"
-# PREFIX
-# "/"
-# FILES
-# ${SHADER_FILES_REL}
-# )
+# Shaders
 
-qt_generate_deploy_app_script(
-    TARGET ${TARGET_NAME}
-    OUTPUT_SCRIPT deploy_script
-    NO_UNSUPPORTED_PLATFORM_ERROR
+set_source_files_properties(${SHADERS} PROPERTIES VS_TOOL_OVERRIDE "None")
+
+get_target_property(ML_SOURCE_DIR MathLib SOURCE_DIR)
+get_target_property(NRI_SOURCE_DIR NRI SOURCE_DIR)
+
+set(SHADERMAKE_GENERAL_ARGS
+    --project "NRISamples"
+    --compactProgress
+    --binary
+    --flatten
+    --stripReflection
+    --WX
+    --PDB
+    --sRegShift 0 --bRegShift 32 --uRegShift 64 --tRegShift 128 # TODO: must be in sync with "VK_BINDING_OFFSETS"
+    --sourceDir "Shaders"
+    --ignoreConfigDir
+    -c "Shaders/Shaders.cfg"
+    -o "${SHADER_OUTPUT_PATH}"
+    -I "Shaders"
+    -I "${ML_SOURCE_DIR}"
+    -I "${NRI_SOURCE_DIR}/Include"
 )
-install(SCRIPT ${deploy_script})
+
+set(SHADERMAKE_COMMANDS "")
+
+if(NRI_ENABLE_D3D11_SUPPORT)
+    set(SHADERMAKE_COMMANDS ${SHADERMAKE_COMMANDS} COMMAND ${SHADERMAKE_PATH} -p DXBC --compiler "${SHADERMAKE_FXC_PATH}" ${SHADERMAKE_GENERAL_ARGS})
+endif()
+
+if(NRI_ENABLE_D3D12_SUPPORT)
+    set(SHADERMAKE_COMMANDS ${SHADERMAKE_COMMANDS} COMMAND ${SHADERMAKE_PATH} -p DXIL --compiler "${SHADERMAKE_DXC_PATH}" ${SHADERMAKE_GENERAL_ARGS})
+endif()
+
+if(NRI_ENABLE_VK_SUPPORT)
+    set(SHADERMAKE_COMMANDS ${SHADERMAKE_COMMANDS} COMMAND ${SHADERMAKE_PATH} -p SPIRV --compiler "${SHADERMAKE_DXC_VK_PATH}" ${SHADERMAKE_GENERAL_ARGS})
+endif()
+
+add_custom_target(${PROJECT_NAME}Shaders ALL
+    ${SHADERMAKE_COMMANDS}
+    DEPENDS ShaderMake
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    VERBATIM
+    SOURCES ${SHADERS}
+)
+
+set_target_properties(${PROJECT_NAME}Shaders PROPERTIES FOLDER ${PROJECT_NAME})
+
