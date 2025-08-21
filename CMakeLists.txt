@@ -60,6 +60,12 @@ CPMAddPackage(
     GITHUB_REPOSITORY NVIDIA-RTX/NRIFramework
 )
 
+CPMAddPackage(
+    NAME spdlog
+    GIT_TAG v1.15.3
+    GITHUB_REPOSITORY gabime/spdlog
+)
+
 add_subdirectory(Modules)
 add_subdirectory(Apps)
 enable_testing()

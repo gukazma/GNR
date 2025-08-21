@@ -14,6 +14,7 @@ set_target_properties(${TARGET_NAME} PROPERTIES FOLDER Apps)
 target_link_libraries(${TARGET_NAME} PRIVATE
 NRIFramework
 NRI
+spdlog::spdlog
 )
 
 set_target_properties(${TARGET_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
